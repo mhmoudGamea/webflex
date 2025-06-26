@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:webflex/core/widget_helper.dart';
 
 class AnimatedScreen extends StatefulWidget {
   const AnimatedScreen({super.key});
@@ -16,6 +17,10 @@ class _AnimatedScreenState extends State<AnimatedScreen>
   @override
   void initState() {
     super.initState();
+    initAnimation();
+  }
+
+  void initAnimation() {
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
@@ -40,24 +45,6 @@ class _AnimatedScreenState extends State<AnimatedScreen>
     super.dispose();
   }
 
-  Widget buildCircle(double radius, String? text) {
-    return CircleAvatar(
-      radius: radius,
-
-      backgroundColor: Colors.white,
-      child: text != null
-          ? Text(
-              text,
-              style: TextStyle(
-                color: const Color(0xFF0A3D62),
-                fontSize: radius / 2,
-                fontWeight: FontWeight.bold,
-              ),
-            )
-          : null,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,11 +53,9 @@ class _AnimatedScreenState extends State<AnimatedScreen>
         child: Stack(
           alignment: Alignment.topCenter,
           children: [
-            // الخط الواصل من الدايرة الكبيرة لآخر الشاشة
+            // line between big circle and small circle
             Positioned(
-              top:
-                  MediaQuery.of(context).size.height / 2 -
-                  50, // نص الشاشة - نص قطر الدايرة الكبيرة
+              top: MediaQuery.of(context).size.height / 2 - 50,
               child: AnimatedBuilder(
                 animation: _lineAnimation,
                 builder: (context, child) {
@@ -83,21 +68,21 @@ class _AnimatedScreenState extends State<AnimatedScreen>
               ),
             ),
 
-            // العمود اللي فيه الدايرتين
+            // big circle at middle of screen
             Column(
               children: [
                 const Spacer(),
-                Center(child: buildCircle(50, 'إشتري')),
+                Center(child: WidgetHelper.buildCircle(50, 'إشتري')),
                 const Spacer(),
               ],
             ),
 
-            // الدايرة الصغيرة فوق نهاية الشاشة بنصها
+            // small circle at end of screen
             Positioned(
               bottom: -50,
               child: FadeTransition(
                 opacity: _smallCircleOpacity,
-                child: buildCircle(40, null),
+                child: WidgetHelper.buildCircle(40, null),
               ),
             ),
           ],
