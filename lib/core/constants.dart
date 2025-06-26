@@ -8,6 +8,5 @@ abstract class Constants {
   static List<Locale> get langs => _langs;
 
   // baseUrl
-  static const String baseUrl =
-      'https://rahmabackend.aldolartoday.com/public/api/v1';
+  static const String baseUrl = 'https://aldolartoday.com/';
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:webflex/core/style/app_colors.dart';
+import 'package:webflex/core/style/app_styles.dart';
 
 abstract class WidgetHelper {
   WidgetHelper._();
@@ -10,11 +12,7 @@ abstract class WidgetHelper {
       child: text != null
           ? Text(
               text,
-              style: TextStyle(
-                color: const Color(0xFF0A3D62),
-                fontSize: radius / 2,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppStyles.lg16Bold.copyWith(color: AppColors.primaryColor),
             )
           : null,
     );
