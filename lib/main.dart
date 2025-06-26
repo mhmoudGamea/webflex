@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:webflex/core/style/app_theme.dart';
+import 'package:webflex/multi_provider.dart';
 
 import 'core/constants.dart';
 import 'presentation/views/splash/splash_view.dart';
@@ -9,12 +10,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
   runApp(
-    EasyLocalization(
-      supportedLocales: Constants.langs,
-      path: 'assets/translations',
-      fallbackLocale: Constants.langs[1],
-      startLocale: Constants.langs.first,
-      child: WebFlex(),
+    GenerateMultiProviders(
+      child: EasyLocalization(
+        supportedLocales: Constants.langs,
+        path: 'assets/translations',
+        fallbackLocale: Constants.langs[1],
+        startLocale: Constants.langs.first,
+        child: WebFlex(),
+      ),
     ),
   );
 }

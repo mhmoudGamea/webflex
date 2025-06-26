@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+
+import '../../../core/style/app_colors.dart';
+import '../../providers/web_view_provider.dart';
 
 class WebViewBody extends StatefulWidget {
   final String url;
@@ -15,13 +19,23 @@ class _WebViewBodyState extends State<WebViewBody> {
   @override
   void initState() {
     super.initState();
+    final provider = Provider.of<WebViewProvider>(context, listen: false);
+
     _controller = WebViewController()
       ..loadRequest(Uri.parse(widget.url))
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
+          onPageStarted: (String url) {
+            provider.setLoading(true);
+          },
           onProgress: (int progress) {
-            // عرض مؤشر التقدم إذا أردت
+            if (progress == 100) {
+              provider.setLoading(false);
+            }
+          },
+          onPageFinished: (String url) {
+            provider.setLoading(false);
           },
         ),
       );
@@ -29,6 +43,18 @@ class _WebViewBodyState extends State<WebViewBody> {
 
   @override
   Widget build(BuildContext context) {
-    return WebViewWidget(controller: _controller);
+    return Consumer<WebViewProvider>(
+      builder: (context, provider, child) {
+        return Stack(
+          children: [
+            WebViewWidget(controller: _controller),
+            if (provider.isLoading)
+              const Center(
+                child: CircularProgressIndicator(color: AppColors.primaryColor),
+              ),
+          ],
+        );
+      },
+    );
   }
 }
