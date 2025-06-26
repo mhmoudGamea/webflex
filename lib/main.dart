@@ -6,6 +6,8 @@ void main() {
   runApp(const WebView());
 }
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class WebView extends StatelessWidget {
   const WebView({super.key});
 
@@ -13,7 +15,7 @@ class WebView extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
-
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       home: AnimatedScreen(),
     );

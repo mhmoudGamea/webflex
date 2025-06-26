@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:webflex/core/style/app_colors.dart';
 import 'package:webflex/core/widget_helper.dart';
+
+import '../../widgets/custom_app_bar.dart';
 
 class AnimatedScreen extends StatefulWidget {
   const AnimatedScreen({super.key});
@@ -48,7 +52,14 @@ class _AnimatedScreenState extends State<AnimatedScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A3D62),
+      backgroundColor: AppColors.primaryColor,
+      appBar: CustomAppBar(
+        showToolBar: false,
+        systemUiOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.black,
+          statusBarIconBrightness: Brightness.light,
+        ),
+      ),
       body: SafeArea(
         child: Stack(
           alignment: Alignment.topCenter,
@@ -61,7 +72,7 @@ class _AnimatedScreenState extends State<AnimatedScreen>
                 builder: (context, child) {
                   return Container(
                     height: _lineAnimation.value,
-                    width: 2,
+                    width: 4,
                     color: Colors.white,
                   );
                 },
