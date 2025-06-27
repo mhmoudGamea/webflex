@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:webflex/core/style/app_theme.dart';
 import 'package:webflex/multi_provider.dart';
 
@@ -8,6 +9,8 @@ import 'presentation/views/splash/splash_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  MobileAds.instance.initialize();
   await EasyLocalization.ensureInitialized();
   runApp(
     GenerateMultiProviders(

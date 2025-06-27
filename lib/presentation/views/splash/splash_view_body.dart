@@ -28,7 +28,7 @@ class _SplashViewBodyState extends State<SplashViewBody>
   void initAnimation() {
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 1),
     );
 
     _lineAnimation = Tween<double>(

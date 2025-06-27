@@ -16,7 +16,7 @@ class WebView extends StatelessWidget {
         showToolBar: false,
       ),
 
-      body: WebViewBody(url: url),
+      body: WebViewBody(htmlPath: 'assets/html/law_firm_intro.html'),
     );
   }
 }

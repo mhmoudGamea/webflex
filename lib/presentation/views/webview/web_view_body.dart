@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../../core/style/app_colors.dart';
 import '../../providers/web_view_provider.dart';
 
 class WebViewBody extends StatefulWidget {
-  final String url;
-  const WebViewBody({super.key, required this.url});
+  final String htmlPath; // تغيير من `url` إلى `htmlPath` للإشارة إلى مسار الملف
+  const WebViewBody({super.key, required this.htmlPath});
 
   @override
   State<WebViewBody> createState() => _WebViewBodyState();
@@ -15,27 +14,38 @@ class WebViewBody extends StatefulWidget {
 
 class _WebViewBodyState extends State<WebViewBody> {
   late final WebViewController _controller;
+  late final WebViewProvider _provider;
 
   @override
   void initState() {
     super.initState();
-    final provider = Provider.of<WebViewProvider>(context, listen: false);
+    _provider = Provider.of<WebViewProvider>(context, listen: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadHtmlContent();
+    });
+  }
 
+  Future<void> _loadHtmlContent() async {
+    await _provider.loadHtmlFromAssets(widget.htmlPath);
+    _initWebViewController();
+  }
+
+  void _initWebViewController() {
     _controller = WebViewController()
-      ..loadRequest(Uri.parse(widget.url))
+      ..loadHtmlString(_provider.htmlContent)
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
-            provider.setLoading(true);
+            _provider.setLoading(true);
           },
           onProgress: (int progress) {
             if (progress == 100) {
-              provider.setLoading(false);
+              _provider.setLoading(false);
             }
           },
           onPageFinished: (String url) {
-            provider.setLoading(false);
+            _provider.setLoading(false);
           },
         ),
       );
@@ -47,11 +57,10 @@ class _WebViewBodyState extends State<WebViewBody> {
       builder: (context, provider, child) {
         return Stack(
           children: [
-            WebViewWidget(controller: _controller),
+            if (!provider.isLoading && provider.htmlContent.isNotEmpty)
+              WebViewWidget(controller: _controller),
             if (provider.isLoading)
-              const Center(
-                child: CircularProgressIndicator(color: AppColors.primaryColor),
-              ),
+              const Center(child: CircularProgressIndicator()),
           ],
         );
       },
