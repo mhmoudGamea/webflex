@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../providers/web_view_provider.dart';
 
 class WebViewBody extends StatefulWidget {
-  final String htmlPath; // تغيير من `url` إلى `htmlPath` للإشارة إلى مسار الملف
+  final String htmlPath;
   const WebViewBody({super.key, required this.htmlPath});
 
   @override
@@ -22,6 +23,8 @@ class _WebViewBodyState extends State<WebViewBody> {
     _provider = Provider.of<WebViewProvider>(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadHtmlContent();
+      _provider.loadBannerAd();
+      _provider.loadInterstitialAd();
     });
   }
 
@@ -55,13 +58,38 @@ class _WebViewBodyState extends State<WebViewBody> {
   Widget build(BuildContext context) {
     return Consumer<WebViewProvider>(
       builder: (context, provider, child) {
-        return Stack(
-          children: [
-            if (!provider.isLoading && provider.htmlContent.isNotEmpty)
-              WebViewWidget(controller: _controller),
-            if (provider.isLoading)
-              const Center(child: CircularProgressIndicator()),
-          ],
+        // عرض الإعلان عندما تكون الصفحة جاهزة
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (provider.isInterstitialAdLoaded && !provider.isLoading) {
+            provider.showInterstitialAd();
+          }
+        });
+
+        return Scaffold(
+          body: Column(
+            children: [
+              // الجزء العلوي للإعلان البانر
+              if (provider.isBannerAdLoaded && provider.bannerAd != null)
+                Container(
+                  height: provider.bannerAd!.size.height.toDouble(),
+                  width: provider.bannerAd!.size.width.toDouble(),
+                  alignment: Alignment.center,
+                  child: AdWidget(ad: provider.bannerAd!),
+                ),
+
+              // الجزء الرئيسي للويب فيو
+              Expanded(
+                child: Stack(
+                  children: [
+                    if (!provider.isLoading && provider.htmlContent.isNotEmpty)
+                      WebViewWidget(controller: _controller),
+                    if (provider.isLoading)
+                      const Center(child: CircularProgressIndicator()),
+                  ],
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
