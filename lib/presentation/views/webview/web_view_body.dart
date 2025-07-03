@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
@@ -56,9 +58,9 @@ class _WebViewBodyState extends State<WebViewBody> {
 
   @override
   Widget build(BuildContext context) {
+    log("WebViewBody build");
     return Consumer<WebViewProvider>(
       builder: (context, provider, child) {
-        // عرض الإعلان عندما تكون الصفحة جاهزة
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (provider.isInterstitialAdLoaded && !provider.isLoading) {
             provider.showInterstitialAd();
@@ -68,16 +70,6 @@ class _WebViewBodyState extends State<WebViewBody> {
         return Scaffold(
           body: Column(
             children: [
-              // الجزء العلوي للإعلان البانر
-              if (provider.isBannerAdLoaded && provider.bannerAd != null)
-                Container(
-                  height: provider.bannerAd!.size.height.toDouble(),
-                  width: provider.bannerAd!.size.width.toDouble(),
-                  alignment: Alignment.center,
-                  child: AdWidget(ad: provider.bannerAd!),
-                ),
-
-              // الجزء الرئيسي للويب فيو
               Expanded(
                 child: Stack(
                   children: [
@@ -88,6 +80,13 @@ class _WebViewBodyState extends State<WebViewBody> {
                   ],
                 ),
               ),
+              if (provider.isBannerAdLoaded && provider.bannerAd != null)
+                Container(
+                  height: provider.bannerAd!.size.height.toDouble(),
+                  width: provider.bannerAd!.size.width.toDouble(),
+                  alignment: Alignment.center,
+                  child: AdWidget(ad: provider.bannerAd!),
+                ),
             ],
           ),
         );

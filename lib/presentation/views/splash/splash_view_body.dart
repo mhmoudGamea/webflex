@@ -1,12 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:webflex/core/constants.dart';
 import 'package:webflex/core/navigator_handler.dart';
 import 'package:webflex/presentation/views/webview/web_view.dart';
 
 import '../../../core/widget_helper.dart';
-import '../../providers/web_view_provider.dart';
 
 class SplashViewBody extends StatefulWidget {
   const SplashViewBody({super.key});
@@ -20,12 +18,10 @@ class _SplashViewBodyState extends State<SplashViewBody>
   late AnimationController _controller;
   late Animation<double> _lineAnimation;
   late Animation<double> _smallCircleOpacity;
-  late WebViewProvider _provider;
 
   @override
   void initState() {
     super.initState();
-    _provider = Provider.of<WebViewProvider>(context, listen: false);
     initAnimation();
   }
 
@@ -55,12 +51,6 @@ class _SplashViewBodyState extends State<SplashViewBody>
   }
 
   Future<void> _navigateAfterAnimation() async {
-    // عرض الإعلان إذا كان جاهزاً
-    if (_provider.isAppOpenAdLoaded) {
-      _provider.showAppOpenAd();
-      await Future.delayed(const Duration(seconds: 1)); // انتظار عرض الإعلان
-    }
-
     if (mounted) {
       NavigatorHandler.pushReplacement(WebView(url: Constants.baseUrl));
     }
@@ -79,7 +69,6 @@ class _SplashViewBodyState extends State<SplashViewBody>
     return Stack(
       alignment: Alignment.topCenter,
       children: [
-        // line between big circle and small circle
         Positioned(
           top: MediaQuery.of(context).size.height / 2 - 50,
           child: AnimatedBuilder(
