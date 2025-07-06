@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
+import 'package:webflex/presentation/providers/ad_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../providers/web_view_provider.dart';
@@ -17,40 +18,41 @@ class WebViewBody extends StatefulWidget {
 
 class _WebViewBodyState extends State<WebViewBody> {
   late final WebViewController _controller;
-  late final WebViewProvider _provider;
+  late final WebViewProvider _webProvider;
+  late final AdProvider _adProvider;
 
   @override
   void initState() {
     super.initState();
-    _provider = Provider.of<WebViewProvider>(context, listen: false);
+    _webProvider = Provider.of<WebViewProvider>(context, listen: false);
+    _adProvider = Provider.of<AdProvider>(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadHtmlContent();
-      _provider.loadBannerAd();
-      _provider.loadInterstitialAd();
+      _adProvider.loadBannerAd();
     });
   }
 
   Future<void> _loadHtmlContent() async {
-    await _provider.loadHtmlFromAssets(widget.htmlPath);
+    await _webProvider.loadHtmlFromAssets(widget.htmlPath);
     _initWebViewController();
   }
 
   void _initWebViewController() {
     _controller = WebViewController()
-      ..loadHtmlString(_provider.htmlContent)
+      ..loadHtmlString(_webProvider.htmlContent)
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
-            _provider.setLoading(true);
+            _webProvider.setLoading(true);
           },
           onProgress: (int progress) {
             if (progress == 100) {
-              _provider.setLoading(false);
+              _webProvider.setLoading(false);
             }
           },
           onPageFinished: (String url) {
-            _provider.setLoading(false);
+            _webProvider.setLoading(false);
           },
         ),
       );
@@ -59,33 +61,28 @@ class _WebViewBodyState extends State<WebViewBody> {
   @override
   Widget build(BuildContext context) {
     log("WebViewBody build");
-    return Consumer<WebViewProvider>(
-      builder: (context, provider, child) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (provider.isInterstitialAdLoaded && !provider.isLoading) {
-            provider.showInterstitialAd();
-          }
-        });
-
+    return Consumer2<WebViewProvider, AdProvider>(
+      builder: (context, webProvider, adProvider, child) {
         return Scaffold(
           body: Column(
             children: [
               Expanded(
                 child: Stack(
                   children: [
-                    if (!provider.isLoading && provider.htmlContent.isNotEmpty)
+                    if (!webProvider.isLoading &&
+                        webProvider.htmlContent.isNotEmpty)
                       WebViewWidget(controller: _controller),
-                    if (provider.isLoading)
+                    if (webProvider.isLoading)
                       const Center(child: CircularProgressIndicator()),
                   ],
                 ),
               ),
-              if (provider.isBannerAdLoaded && provider.bannerAd != null)
+              if (adProvider.isBannerAdLoaded && adProvider.bannerAd != null)
                 Container(
-                  height: provider.bannerAd!.size.height.toDouble(),
-                  width: provider.bannerAd!.size.width.toDouble(),
+                  height: adProvider.bannerAd!.size.height.toDouble(),
+                  width: adProvider.bannerAd!.size.width.toDouble(),
                   alignment: Alignment.center,
-                  child: AdWidget(ad: provider.bannerAd!),
+                  child: AdWidget(ad: adProvider.bannerAd!),
                 ),
             ],
           ),

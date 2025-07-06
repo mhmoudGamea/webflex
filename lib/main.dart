@@ -4,17 +4,17 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:webflex/core/style/app_theme.dart';
 import 'package:webflex/multi_provider.dart';
+import 'package:webflex/presentation/providers/ad_provider.dart';
 
 import 'core/constants.dart';
-import 'presentation/providers/web_view_provider.dart';
 import 'presentation/views/splash/splash_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  MobileAds.instance.initialize();
   await MobileAds.instance.initialize();
   await EasyLocalization.ensureInitialized();
+
   runApp(
     GenerateMultiProviders(
       child: EasyLocalization(
@@ -22,7 +22,7 @@ void main() async {
         path: 'assets/translations',
         fallbackLocale: Constants.langs[1],
         startLocale: Constants.langs.first,
-        child: WebFlex(),
+        child: const WebFlexApp(),
       ),
     ),
   );
@@ -30,18 +30,25 @@ void main() async {
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-class WebFlex extends StatefulWidget {
-  const WebFlex({super.key});
+class WebFlexApp extends StatefulWidget {
+  const WebFlexApp({super.key});
 
   @override
-  State<WebFlex> createState() => _WebFlexState();
+  State<WebFlexApp> createState() => _WebFlexAppState();
 }
 
-class _WebFlexState extends State<WebFlex> with WidgetsBindingObserver {
+class _WebFlexAppState extends State<WebFlexApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _initializeAds();
+  }
+
+  Future<void> _initializeAds() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final provider = Provider.of<AdProvider>(context, listen: false);
+    provider.initializeAdds();
   }
 
   @override
@@ -52,14 +59,23 @@ class _WebFlexState extends State<WebFlex> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      final provider = Provider.of<WebViewProvider>(
-        navigatorKey.currentContext!,
-        listen: false,
-      );
-      if (provider.isAppOpenAdLoaded) {
-        provider.showAppOpenAd();
-      }
+    final provider = Provider.of<AdProvider>(context, listen: false);
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        provider.handleAppResumed();
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+        provider.handleAppPaused();
+        break;
+      case AppLifecycleState.detached:
+        provider.handleAppClosed();
+        break;
+      case AppLifecycleState.hidden:
+        // Handle the new hidden state (added in Flutter 3.x)
+        provider.handleAppPaused(); // Treat hidden same as paused
+        break;
     }
   }
 

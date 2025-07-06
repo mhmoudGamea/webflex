@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'presentation/providers/ad_provider.dart';
 import 'presentation/providers/web_view_provider.dart';
 
 class GenerateMultiProviders extends StatelessWidget {
@@ -10,7 +11,10 @@ class GenerateMultiProviders extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => WebViewProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => WebViewProvider()),
+        ChangeNotifierProvider(create: (_) => AdProvider()),
+      ],
       child: child,
     );
   }
