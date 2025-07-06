@@ -11,7 +11,6 @@ import 'presentation/views/splash/splash_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await MobileAds.instance.initialize();
   await EasyLocalization.ensureInitialized();
 
@@ -42,41 +41,29 @@ class _WebFlexAppState extends State<WebFlexApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _initializeAds();
   }
 
-  Future<void> _initializeAds() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    final provider = Provider.of<AdProvider>(context, listen: false);
-    provider.initializeAdds();
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final adProvider = Provider.of<AdProvider>(context, listen: false);
+
+    switch (state) {
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+        adProvider.handleAppPaused();
+        break;
+      case AppLifecycleState.resumed:
+        adProvider.handleAppResumed();
+        break;
+      default:
+        break;
+    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    final provider = Provider.of<AdProvider>(context, listen: false);
-
-    switch (state) {
-      case AppLifecycleState.resumed:
-        provider.handleAppResumed();
-        break;
-      case AppLifecycleState.paused:
-      case AppLifecycleState.inactive:
-        provider.handleAppPaused();
-        break;
-      case AppLifecycleState.detached:
-        provider.handleAppClosed();
-        break;
-      case AppLifecycleState.hidden:
-        // Handle the new hidden state (added in Flutter 3.x)
-        provider.handleAppPaused(); // Treat hidden same as paused
-        break;
-    }
   }
 
   @override

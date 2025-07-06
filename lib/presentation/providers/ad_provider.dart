@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:webflex/presentation/providers/ad_manager.dart';
@@ -8,11 +6,23 @@ class AdProvider with ChangeNotifier {
   // Banner Ad
   BannerAd? _bannerAd;
   bool _isBannerAdLoaded = false;
-
   BannerAd? get bannerAd => _bannerAd;
   bool get isBannerAdLoaded => _isBannerAdLoaded;
 
+  // Interstitial Ad
+  InterstitialAd? _interstitialAd;
+  bool _isInterstitialReady = false;
+  DateTime? _lastInterstitialShowTime;
+
+  // App Open Ad
+  AppOpenAd? _appOpenAd;
+  bool _isAppOpenReady = false;
+  bool _isAppInBackground = false;
+
+  // Banner Ad Logic
   Future<void> loadBannerAd() async {
+    if (_isBannerAdLoaded) return;
+
     _bannerAd = BannerAd(
       adUnitId: AdManager.bannerId,
       size: AdSize.banner,
@@ -27,29 +37,15 @@ class AdProvider with ChangeNotifier {
           _bannerAd = null;
           _isBannerAdLoaded = false;
           notifyListeners();
+          Future.delayed(const Duration(seconds: 30), loadBannerAd);
         },
       ),
     );
     await _bannerAd?.load();
   }
 
-  // Interstitial & App Open Ads
-  InterstitialAd? _interstitialAd;
-  AppOpenAd? _appOpenAd;
-  bool _isFirstLaunch = true;
-  bool _isAppInBackground = false;
-  bool _isInterstitialReady = false;
-  bool _isAppOpenReady = false;
-
-  bool get shouldShowInterstitial => _isFirstLaunch && _isInterstitialReady;
-  bool get shouldShowAppOpen => _isAppInBackground && _isAppOpenReady;
-
-  void initializeAdds() {
-    _loadInterstitialAd();
-    _loadAppOpenAd();
-  }
-
-  Future<void> _loadInterstitialAd() async {
+  // Interstitial Ad Logic
+  Future<void> loadInterstitialAd() async {
     await InterstitialAd.load(
       adUnitId: AdManager.interstitialId,
       request: const AdRequest(),
@@ -59,17 +55,11 @@ class AdProvider with ChangeNotifier {
           _isInterstitialReady = true;
           _setupInterstitialCallbacks(ad);
           notifyListeners();
-
-          log('is first launch inter => $_isFirstLaunch');
-
-          if (_isFirstLaunch) {
-            _showInterstitialAd();
-            _isFirstLaunch = false;
-          }
+          _showInterstitialAd();
         },
         onAdFailedToLoad: (error) {
           _isInterstitialReady = false;
-          _retryLoadInterstitial();
+          Future.delayed(const Duration(minutes: 1), loadInterstitialAd);
         },
       ),
     );
@@ -80,28 +70,39 @@ class AdProvider with ChangeNotifier {
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
         _isInterstitialReady = false;
+        _lastInterstitialShowTime = DateTime.now();
+        // loadInterstitialAd();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
         _isInterstitialReady = false;
+        loadInterstitialAd();
       },
     );
   }
 
   Future<void> _showInterstitialAd() async {
-    if (_interstitialAd != null && _isInterstitialReady) {
-      await _interstitialAd!.show();
+    // Don't show if already showing or not ready
+    if (!_isInterstitialReady) {
+      await loadInterstitialAd();
+      return;
+    }
+
+    // Prevent too frequent shows
+    if (_lastInterstitialShowTime != null &&
+        DateTime.now().difference(_lastInterstitialShowTime!) <
+            const Duration(minutes: 1)) {
+      return;
+    }
+
+    if (_interstitialAd != null) {
+      _interstitialAd!.show();
       _isInterstitialReady = false;
+      _lastInterstitialShowTime = DateTime.now();
     }
   }
 
-  Future<void> _retryLoadInterstitial() async {
-    await Future.delayed(const Duration(seconds: 10));
-    _loadInterstitialAd();
-  }
-
-  // app open ad
-
+  // App Open Ad Logic
   Future<void> _loadAppOpenAd() async {
     await AppOpenAd.load(
       adUnitId: AdManager.appOpenAdId,
@@ -112,15 +113,10 @@ class AdProvider with ChangeNotifier {
           _isAppOpenReady = true;
           _setupAppOpenCallbacks(ad);
           notifyListeners();
-          log('is first launch app => $_isFirstLaunch');
-
-          if (!_isFirstLaunch) {
-            showAppOpenAd();
-          }
         },
         onAdFailedToLoad: (error) {
           _isAppOpenReady = false;
-          _retryLoadAppOpen();
+          Future.delayed(const Duration(minutes: 1), _loadAppOpenAd);
         },
       ),
     );
@@ -131,56 +127,39 @@ class AdProvider with ChangeNotifier {
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
         _isAppOpenReady = false;
-        // _loadAppOpenAd();
-        _loadInterstitialAd().then((_) {
-          if (_isInterstitialReady) {
-            _showInterstitialAd();
-          }
-        });
+        _loadAppOpenAd();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
         _isAppOpenReady = false;
-        // _loadAppOpenAd();
+        _loadAppOpenAd();
       },
     );
   }
 
-  Future<void> _retryLoadAppOpen() async {
-    await Future.delayed(const Duration(seconds: 10));
-    _loadAppOpenAd();
-  }
-
   Future<void> showAppOpenAd() async {
-    if (_appOpenAd != null && _isAppOpenReady) {
-      await _appOpenAd!.show();
+    if (!_isAppOpenReady) {
+      await _loadAppOpenAd();
+      return;
+    }
+
+    if (_appOpenAd != null) {
+      _appOpenAd!.show();
       _isAppOpenReady = false;
     }
   }
 
-  // App Lifecycle
-  void handleAppResumed() {
-    if (_isAppInBackground) {
-      _isAppInBackground = false;
-      if (_isAppOpenReady) {
-        showAppOpenAd();
-      } else {
-        _loadAppOpenAd();
-      }
-    }
-  }
-
+  // Lifecycle Handling
   void handleAppPaused() {
     _isAppInBackground = true;
-    _loadAppOpenAd();
+    _loadAppOpenAd(); // Prepare for next resume
   }
 
-  void handleAppClosed() {
-    _isFirstLaunch = true;
-    _isAppInBackground = false;
-    _isInterstitialReady = false;
-    _isAppOpenReady = false;
-    notifyListeners();
+  Future<void> handleAppResumed() async {
+    if (_isAppInBackground) {
+      _isAppInBackground = false;
+      await showAppOpenAd();
+    }
   }
 
   @override

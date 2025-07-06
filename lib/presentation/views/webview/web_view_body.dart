@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
@@ -26,9 +24,11 @@ class _WebViewBodyState extends State<WebViewBody> {
     super.initState();
     _webProvider = Provider.of<WebViewProvider>(context, listen: false);
     _adProvider = Provider.of<AdProvider>(context, listen: false);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadHtmlContent();
       _adProvider.loadBannerAd();
+      _adProvider.loadInterstitialAd();
     });
   }
 
@@ -43,24 +43,17 @@ class _WebViewBodyState extends State<WebViewBody> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageStarted: (String url) {
-            _webProvider.setLoading(true);
+          onPageStarted: (_) => _webProvider.setLoading(true),
+          onProgress: (progress) {
+            if (progress == 100) _webProvider.setLoading(false);
           },
-          onProgress: (int progress) {
-            if (progress == 100) {
-              _webProvider.setLoading(false);
-            }
-          },
-          onPageFinished: (String url) {
-            _webProvider.setLoading(false);
-          },
+          onPageFinished: (_) => _webProvider.setLoading(false),
         ),
       );
   }
 
   @override
   Widget build(BuildContext context) {
-    log("WebViewBody build");
     return Consumer2<WebViewProvider, AdProvider>(
       builder: (context, webProvider, adProvider, child) {
         return Scaffold(
@@ -78,11 +71,13 @@ class _WebViewBodyState extends State<WebViewBody> {
                 ),
               ),
               if (adProvider.isBannerAdLoaded && adProvider.bannerAd != null)
-                Container(
-                  height: adProvider.bannerAd!.size.height.toDouble(),
-                  width: adProvider.bannerAd!.size.width.toDouble(),
-                  alignment: Alignment.center,
-                  child: AdWidget(ad: adProvider.bannerAd!),
+                SafeArea(
+                  child: Container(
+                    height: adProvider.bannerAd!.size.height.toDouble(),
+                    width: double.infinity,
+                    alignment: Alignment.center,
+                    child: AdWidget(ad: adProvider.bannerAd!),
+                  ),
                 ),
             ],
           ),
