@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:webflex/presentation/providers/ad_manager.dart';
@@ -13,11 +15,15 @@ class AdProvider with ChangeNotifier {
   InterstitialAd? _interstitialAd;
   bool _isInterstitialReady = false;
   DateTime? _lastInterstitialShowTime;
+  bool _isFirstLaunch = true;
 
   // App Open Ad
   AppOpenAd? _appOpenAd;
   bool _isAppOpenReady = false;
   bool _isAppInBackground = false;
+
+  // shared
+  bool _hasFullyStarted = false;
 
   // Banner Ad Logic
   Future<void> loadBannerAd() async {
@@ -55,7 +61,9 @@ class AdProvider with ChangeNotifier {
           _isInterstitialReady = true;
           _setupInterstitialCallbacks(ad);
           notifyListeners();
-          _showInterstitialAd();
+          if (_isFirstLaunch) {
+            _showInterstitialAd();
+          }
         },
         onAdFailedToLoad: (error) {
           _isInterstitialReady = false;
@@ -68,10 +76,11 @@ class AdProvider with ChangeNotifier {
   void _setupInterstitialCallbacks(InterstitialAd ad) {
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
+        log('dispose interstesial');
         ad.dispose();
         _isInterstitialReady = false;
         _lastInterstitialShowTime = DateTime.now();
-        // loadInterstitialAd();
+        _isFirstLaunch = false;
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
@@ -143,7 +152,7 @@ class AdProvider with ChangeNotifier {
       return;
     }
 
-    if (_appOpenAd != null) {
+    if (_appOpenAd != null && !_isFirstLaunch) {
       _appOpenAd!.show();
       _isAppOpenReady = false;
     }
@@ -152,10 +161,15 @@ class AdProvider with ChangeNotifier {
   // Lifecycle Handling
   void handleAppPaused() {
     _isAppInBackground = true;
-    _loadAppOpenAd(); // Prepare for next resume
+    _loadAppOpenAd();
   }
 
   Future<void> handleAppResumed() async {
+    if (!_hasFullyStarted) {
+      _hasFullyStarted = true;
+      return;
+    }
+
     if (_isAppInBackground) {
       _isAppInBackground = false;
       await showAppOpenAd();
