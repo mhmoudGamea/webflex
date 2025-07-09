@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:webflex/presentation/providers/language_provider.dart';
 
 import 'presentation/providers/ad_provider.dart';
 import 'presentation/providers/web_view_provider.dart';
@@ -14,6 +15,7 @@ class GenerateMultiProviders extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => WebViewProvider()),
         ChangeNotifierProvider(create: (_) => AdProvider()),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
       ],
       child: child,
     );

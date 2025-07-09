@@ -1,5 +1,21 @@
 {
     "splash": {
         "title": "Buy.com"
+    },
+    "app": {
+        "title": "Law Firm"
+    },
+    "category": {
+        "moreApps": "More Apps",
+        "privacyPolicy": "Privacy Policy",
+        "rateTheApp": "Rate the App",
+        "changeLanguage": "Change Language"
+    },
+    "rate_app": {
+        "title": "قيم التطبيق",
+        "message": "إذا أعجبك التطبيق، يرجى تقييمه لدعمنا",
+        "never_show": "لا تظهر مجدداً",
+        "later": "لاحقاً",
+        "rate_now": "تقييم الآن"
     }
 }

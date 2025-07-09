@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:webflex/core/constants.dart';
 import 'package:webflex/core/navigator_handler.dart';
 import 'package:webflex/presentation/views/webview/web_view.dart';
 
@@ -52,7 +51,7 @@ class _SplashViewBodyState extends State<SplashViewBody>
 
   Future<void> _navigateAfterAnimation() async {
     if (mounted) {
-      NavigatorHandler.pushReplacement(WebView(url: Constants.baseUrl));
+      NavigatorHandler.pushReplacement(WebView());
     }
   }
 

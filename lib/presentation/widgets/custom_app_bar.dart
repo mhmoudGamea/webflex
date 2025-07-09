@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../app.dart';
 import '../../core/style/app_colors.dart';
 import '../../core/style/app_styles.dart';
-import '../../main.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -43,7 +43,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             statusBarColor: AppColors.primaryColor,
             statusBarIconBrightness: Brightness.light,
           ),
-      title: Text(title ?? '', style: AppStyles.lg16Bold),
+      title: Text(
+        title ?? '',
+        style: AppStyles.lg16Bold.copyWith(color: fontColor ?? AppColors.white),
+      ),
       centerTitle: centerTitle ?? false,
       actions: actions,
       automaticallyImplyLeading: showBackArrow ?? true,
