@@ -12,10 +12,10 @@
         "changeLanguage": "تغيير اللغة"
     },
     "rate_app": {
-        "title": "Rate the App",
-        "message": "If you enjoy the app, please rate to support us",
-        "never_show": "Don't show again",
-        "later": "Later",
-        "rate_now": "Rate Now"
+        "title": "قيم التطبيق",
+        "message": "إذا أعجبك التطبيق، يرجى تقييمه لدعمنا",
+        "never_show": "لا تظهر مجدداً",
+        "later": "لاحقاً",
+        "rate_now": "تقييم الآن"
     }
 }

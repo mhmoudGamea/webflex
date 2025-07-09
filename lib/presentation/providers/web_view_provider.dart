@@ -66,15 +66,22 @@ class WebViewProvider with ChangeNotifier {
 
     switch (category.category) {
       case Category.moreApps:
-        await _launchUrl(Constants.moreAppsUrl);
+        await launchThirdPartyUrl(Constants.moreAppsUrl);
         break;
       case Category.privacyPolicy:
-        await loadHtmlFromAssets(Constants.privacyAndPolicyUrl);
+        final isArabic = context.read<LanguageProvider>().isArabic();
+        await loadHtmlFromAssets(
+          isArabic
+              ? Constants.privacyAndPolicyUrlAr
+              : Constants.privacyAndPolicyUrlEn,
+        );
         break;
       case Category.rateTheApp:
         final packageInfo = await PackageInfo.fromPlatform();
         log('package name => ${packageInfo.packageName}');
-        await _launchUrl('${Constants.appRateUrl}${packageInfo.packageName}');
+        await launchThirdPartyUrl(
+          '${Constants.appRateUrl}${packageInfo.packageName}',
+        );
         break;
       case Category.changeLanguage:
         final prefs = await SharedPreferences.getInstance();
@@ -87,7 +94,7 @@ class WebViewProvider with ChangeNotifier {
     }
   }
 
-  Future<void> _launchUrl(String url) async {
+  Future<void> launchThirdPartyUrl(String url) async {
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url));
     } else {

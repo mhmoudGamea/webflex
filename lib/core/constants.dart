@@ -24,7 +24,10 @@ abstract class Constants {
       'https://play.google.com/store/apps/developer?id=EmyPro';
 
   // privacy and policy url
-  static const String privacyAndPolicyUrl = 'assets/html/privacy_policy.html';
+  static const String privacyAndPolicyUrlAr =
+      'assets/html/privacy_policy_ar.html';
+  static const String privacyAndPolicyUrlEn =
+      'assets/html/privacy_policy_en.html';
 
   // current app url in app store
   static const String appRateUrl =

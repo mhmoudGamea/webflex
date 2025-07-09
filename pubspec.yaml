@@ -30,7 +30,8 @@ flutter:
     - assets/images/
     - assets/html/law_firm_intro_ar.html
     - assets/html/law_firm_intro_en.html
-    - assets/html/privacy_policy.html
+    - assets/html/privacy_policy_ar.html
+    - assets/html/privacy_policy_en.html
   fonts:
     - family: noto
       fonts:

@@ -8,6 +8,7 @@ import 'package:webflex/multi_provider.dart';
 import 'package:webflex/presentation/providers/ad_provider.dart';
 
 import 'core/constants.dart';
+import 'presentation/providers/rating_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +17,7 @@ void main() async {
 
   final prefs = await SharedPreferences.getInstance();
   final savedLanguage = prefs.getString(Constants.languageKey);
+  RatingManager.resetSession();
 
   runApp(
     GenerateMultiProviders(
