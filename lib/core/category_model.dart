@@ -17,12 +17,6 @@ class CategoryModel {
 
   static List<CategoryModel> categories = [
     CategoryModel(
-      title: 'category.changeLanguage',
-      category: Category.changeLanguage,
-      icon: Icons.language,
-      color: Colors.black,
-    ),
-    CategoryModel(
       title: 'category.rateTheApp',
       category: Category.rateTheApp,
       icon: Icons.star,
@@ -39,6 +33,12 @@ class CategoryModel {
       category: Category.privacyPolicy,
       icon: Icons.privacy_tip,
       color: Colors.blue,
+    ),
+    CategoryModel(
+      title: 'category.changeLanguage',
+      category: Category.changeLanguage,
+      icon: Icons.language,
+      color: Colors.black,
     ),
   ];
 }

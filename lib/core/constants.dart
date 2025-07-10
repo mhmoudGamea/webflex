@@ -10,14 +10,17 @@ abstract class Constants {
   // safed language
   static const String languageKey = 'language';
 
-  // initial url
+  // initial html url
   static const String initialArUrl = 'assets/html/law_firm_intro_ar.html';
-  static const String initialEnUrl = 'assets/html/law_firm_intro_en.html';
+  static const String initialEnUrl = ''; //assets/html/law_firm_intro_en.html
+  // initial url
+  static const String initialUrl = 'https://aldolartoday.com/';
 
-  // just change this variable
-  // if i have 1 html [en or ar] = 1
-  // if you have both = 2
-  static const int numberOfInitialHtml = 2;
+  // is Locale file [true if html]? or [false if url]?
+  static const bool isLocale = true;
+
+  static const bool shouldShowLanguage =
+      initialArUrl != '' && initialEnUrl != '' && initialUrl == '';
 
   // more apps url
   static const String moreAppsUrl =
@@ -27,7 +30,7 @@ abstract class Constants {
   static const String privacyAndPolicyUrlAr =
       'assets/html/privacy_policy_ar.html';
   static const String privacyAndPolicyUrlEn =
-      'assets/html/privacy_policy_en.html';
+      ''; //assets/html/privacy_policy_en.html
 
   // current app url in app store
   static const String appRateUrl =

@@ -13,47 +13,59 @@ class WebViewProvider with ChangeNotifier {
   bool _isLoading = true;
   String _htmlContent = '';
   final List<String> _navigationStack = [];
-  String _currentPath = '';
+  String _currentUrl = '';
+  bool _isLocalContent = false;
 
   bool get isLoading => _isLoading;
   String get htmlContent => _htmlContent;
-  String get currentPath => _currentPath;
+  String get currentUrl => _currentUrl;
   bool get canGoBack => _navigationStack.length > 1;
+  bool get isLocalContent => _isLocalContent;
 
-  Future<void> loadHtmlFromAssets(String path) async {
-    log('Loading file from: $path');
+  Future<void> loadContent(String content, {bool isLocal = false}) async {
     try {
       _isLoading = true;
+      _isLocalContent = isLocal;
       notifyListeners();
 
-      _htmlContent = await rootBundle.loadString(path);
-      _currentPath = path;
+      if (isLocal) {
+        // Load from assets
+        _htmlContent = await rootBundle.loadString(content);
+        log('Loaded local HTML file: $content');
+      } else {
+        // Set as URL
+        _htmlContent = '';
+        _currentUrl = content;
+        log('Set URL: $content');
+      }
 
-      if (_navigationStack.isEmpty || _navigationStack.last != path) {
-        _navigationStack.add(path);
+      if (_navigationStack.isEmpty || _navigationStack.last != content) {
+        _navigationStack.add(content);
       }
 
       _isLoading = false;
       notifyListeners();
-      log('File loaded successfully');
     } catch (e) {
-      log('Error loading file: $e');
+      log('Error loading content: $e');
       _isLoading = false;
       notifyListeners();
-      throw Exception("Failed to load file: $e");
+      throw Exception("Failed to load content: $e");
     }
   }
 
-  Future<void> loadInitialContent(String initialPath) async {
+  Future<void> loadInitialContent(
+    String initialContent, {
+    bool isLocal = false,
+  }) async {
     _navigationStack.clear();
-    await loadHtmlFromAssets(initialPath);
+    await loadContent(initialContent, isLocal: isLocal);
   }
 
   Future<void> handleBack() async {
     if (_navigationStack.length > 1) {
       _navigationStack.removeLast();
-      final previousPath = _navigationStack.last;
-      await loadHtmlFromAssets(previousPath);
+      final previousContent = _navigationStack.last;
+      await loadContent(previousContent, isLocal: _isLocalContent);
     }
   }
 
@@ -70,10 +82,11 @@ class WebViewProvider with ChangeNotifier {
         break;
       case Category.privacyPolicy:
         final isArabic = context.read<LanguageProvider>().isArabic();
-        await loadHtmlFromAssets(
+        await loadContent(
           isArabic
               ? Constants.privacyAndPolicyUrlAr
               : Constants.privacyAndPolicyUrlEn,
+          isLocal: true,
         );
         break;
       case Category.rateTheApp:

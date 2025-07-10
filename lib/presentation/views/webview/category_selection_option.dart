@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +14,7 @@ class CategorySelectionOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    log('kkk => ${Constants.shouldShowLanguage}');
     return Consumer<LanguageProvider>(
       builder: (context, value, child) {
         return DropdownMenu<CategoryModel>(
@@ -36,7 +39,7 @@ class CategorySelectionOption extends StatelessWidget {
 
           onSelected: onChanged,
           dropdownMenuEntries: List.generate(
-            Constants.numberOfInitialHtml == 2 ? 4 : 3,
+            Constants.shouldShowLanguage ? 4 : 3,
             (index) => DropdownMenuEntry<CategoryModel>(
               value: CategoryModel.categories[index],
               label: CategoryModel.categories[index].title.tr(),

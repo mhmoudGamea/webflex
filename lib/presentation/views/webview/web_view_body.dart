@@ -16,14 +16,24 @@ class _WebViewBodyState extends State<WebViewBody> {
   late final WebViewController _controller;
   late final AdProvider _adProvider;
   bool _webViewInitialized = false;
-  String? _lastLoadedHtml;
+  String? _lastLoadedContent;
+  bool _lastWasLocal = false;
 
   @override
   void initState() {
     super.initState();
     _adProvider = Provider.of<AdProvider>(context, listen: false);
     _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted);
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (_) => _updateLoading(true),
+          onProgress: (progress) {
+            if (progress == 100) _updateLoading(false);
+          },
+          onPageFinished: (_) => _updateLoading(false),
+        ),
+      );
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _loadInitialWebView();
@@ -35,29 +45,29 @@ class _WebViewBodyState extends State<WebViewBody> {
   Future<void> _loadInitialWebView() async {
     final webProvider = Provider.of<WebViewProvider>(context, listen: false);
 
-    if (webProvider.htmlContent.isEmpty) {
+    if (webProvider.isLocalContent && webProvider.htmlContent.isEmpty) {
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
       await _loadInitialWebView();
       return;
     }
 
-    await _controller.loadHtmlString(webProvider.htmlContent);
-    _lastLoadedHtml = webProvider.htmlContent;
-
-    _controller.setNavigationDelegate(
-      NavigationDelegate(
-        onPageStarted: (_) => _updateLoading(true),
-        onProgress: (progress) {
-          if (progress == 100) _updateLoading(false);
-        },
-        onPageFinished: (_) => _updateLoading(false),
-        onNavigationRequest: (request) => NavigationDecision.prevent,
-      ),
-    );
+    await _loadWebViewContent(webProvider);
+    _lastLoadedContent = webProvider.isLocalContent
+        ? webProvider.htmlContent
+        : webProvider.currentUrl;
+    _lastWasLocal = webProvider.isLocalContent;
 
     if (mounted) {
       setState(() => _webViewInitialized = true);
+    }
+  }
+
+  Future<void> _loadWebViewContent(WebViewProvider webProvider) async {
+    if (webProvider.isLocalContent) {
+      await _controller.loadHtmlString(webProvider.htmlContent);
+    } else {
+      await _controller.loadRequest(Uri.parse(webProvider.currentUrl));
     }
   }
 
@@ -69,13 +79,20 @@ class _WebViewBodyState extends State<WebViewBody> {
 
   @override
   Widget build(BuildContext context) {
-    final webProvider = Provider.of<WebViewProvider>(context, listen: false);
+    final webProvider = Provider.of<WebViewProvider>(context);
 
-    if (_webViewInitialized &&
-        webProvider.htmlContent.isNotEmpty &&
-        _lastLoadedHtml != webProvider.htmlContent) {
-      _lastLoadedHtml = webProvider.htmlContent;
-      _controller.loadHtmlString(webProvider.htmlContent);
+    if (_webViewInitialized) {
+      final currentContent = webProvider.isLocalContent
+          ? webProvider.htmlContent
+          : webProvider.currentUrl;
+
+      if (currentContent.isNotEmpty &&
+          (_lastLoadedContent != currentContent ||
+              _lastWasLocal != webProvider.isLocalContent)) {
+        _lastLoadedContent = currentContent;
+        _lastWasLocal = webProvider.isLocalContent;
+        _loadWebViewContent(webProvider);
+      }
     }
 
     if (!_webViewInitialized) {

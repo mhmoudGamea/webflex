@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:webflex/presentation/providers/language_provider.dart';
 
 import 'core/style/app_theme.dart';
-import 'presentation/views/splash/splash_view.dart';
+import 'presentation/views/webview/web_view.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -26,7 +26,7 @@ class _AppState extends State<App> {
         supportedLocales: context.supportedLocales,
         locale: context.locale,
         navigatorKey: navigatorKey,
-        home: const SplashView(),
+        home: const WebView(),
       ),
     );
   }

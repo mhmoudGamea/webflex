@@ -23,9 +23,16 @@ class WebView extends StatelessWidget {
 
     // Load initial content
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      provider.loadInitialContent(
-        lang ? Constants.initialArUrl : Constants.initialEnUrl,
-      );
+      if (Constants.isLocale) {
+        // if is local
+        provider.loadInitialContent(
+          isLocal: true,
+          lang ? Constants.initialArUrl : Constants.initialEnUrl,
+        );
+      } else {
+        // if is not local
+        provider.loadInitialContent(isLocal: false, Constants.initialUrl);
+      }
     });
 
     return Consumer2<LanguageProvider, WebViewProvider>(
